@@ -1,1 +1,1 @@
-# Tech Bizz OpenHack 2024
+# Tech Bizz OpenHack 2024 Internal Hackathon
