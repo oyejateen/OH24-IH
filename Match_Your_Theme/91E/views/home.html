@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pet Adoption</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <style>
-        /* Custom styles */
         .navbar-bg {
             background-color: #ff9999; /* Light pink */
         }
@@ -32,10 +32,9 @@
         </div>
     </nav>
 
-    <!-- Hero section with search input and pet image -->
+    <!-- Hero section  -->
     <div class="bg-pink-100 text-gray-900 py-20">
         <div class="container mx-auto flex flex-col items-center">
-            <!-- Pet image -->
             <img src="https://raw.githubusercontent.com/ManuelMaciel/adoptapy-back/main/assets/readme-img.png" alt="Pet" class="max-w-full  mb-8 rounded-full">
             <h1 class="text-4xl font-bold mb-8">Find Your New Best Friend</h1>
             <div class="flex items-center">
@@ -48,20 +47,17 @@
     </div>
 
     <!-- Main content section -->
-  <div class="container mx-auto py-12" id="shareHappinessSection" style="display: none;">
-      <h2 class="text-4xl font-bold text-indigo-400 text-center mb-4">Share Happiness</h2>
-      <!-- Card grid for displaying pets -->
-      <div id="petCards" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-          <!-- Pet cards will be dynamically added here -->
-      </div>
-  </div>
+    <div class="container mx-auto py-12" id="shareHappinessSection" style="display: none;">
+        <h2 class="text-4xl font-bold text-indigo-400 text-center mb-4">Share Happiness</h2>
+        <div id="petCards" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+        </div>
+    </div>
 
 
     <!-- Footer -->
     <footer class="bg-pink-100 text-gray-900 py-6">
         <div class="container mx-auto text-center">
             <p>&copy; 2024 Pet Adoption</p>
-            <!-- Social links -->
             <div class="mt-4">
                 <a href="#" class="text-gray-600 hover:text-gray-900 mx-2"><svg class="h-6 w-6" fill="none"
                         stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -82,68 +78,56 @@
             </div>
         </div>
     </footer>
+    <script>
+    function fetchPets() {
+        const cat = document.getElementById('searchInput').value;
+        const apiKey = '8nAdB01TEf8aF07HcfsoP2JwCEjihQrpGZkhjWLKEt7AE9nKof';
 
-  <script>
-      // Function to fetch data from the Petfinder API
-    // Update the fetchPets function to make a request to your server's endpoint
-    async function fetchPets(searchInput) {
-        const apiUrl = `/api/pets?type=${searchInput}`; // Construct API URL for your server
-        try {
-            const response = await fetch(apiUrl);
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
+        const url = `https://api.petfinder.com/v2/animals?type=${cat}&location=33101&output=basic&format=json`;
+
+        $.ajax({
+            url: url,
+            dataType: 'json', // Change this to 'json'
+            success: function (response) {
+                console.log(response);
+                if (response.animals) { 
+                    const pet = response.animals.animals[0]; 
+                    displayPetCard(pet);
+                    document.getElementById('shareHappinessSection').style.display = 'block';
+                } else {
+                    console.error('No pets found for this search');
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Error:', error);
             }
-            const data = await response.json();
-            return data;
-        } catch (error) {
-            console.error('Error fetching data:', error);
-            return null;
-        }
+        });
+    }
+    function displayPetCard(pet) {
+        const petCardsContainer = document.getElementById('petCards');
+        const card = `
+            <div class="bg-white rounded-lg shadow-md">
+                <img src="${pet.photos[0].large}" alt="${pet.name}" class="w-full h-48 object-cover">
+                <div class="p-4">
+                    <h3 class="text-xl font-semibold mb-2">${pet.name}</h3>
+                    <p class="text-gray-600">${pet.description}</p>
+                    <button class="mt-4 bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-500">View Profile</button>
+                </div>
+            </div>`;
+        petCardsContainer.innerHTML = card;
     }
 
-    // Update the searchPets function to use the updated fetchPets function
-    async function searchPets() {
-        const searchInput = document.getElementById('searchInput').value;
-        console.log('Searching for:', searchInput);
-        const pets = await fetchPets(searchInput);
-        if (pets) {
-            displayPetCards(pets.animals); // Assuming the fetched data is in the 'animals' array
-            document.getElementById('shareHappinessSection').style.display = 'block';
-        } else {
-            console.log('No pets found');
-        }
-    }
+    document.getElementById('searchBtn').addEventListener('click', function () {
+        fetchPets();
+    });
 
-      // Function to display pet cards
-      function displayPetCards(pets) {
-          const petCardsContainer = document.getElementById('petCards');
-          petCardsContainer.innerHTML = ''; // Clear previous cards
-          pets.forEach(pet => {
-              const card = `
-              <div class="bg-white rounded-lg shadow-md">
-                  <img src="${pet.photo}" alt="${pet.name}" class="w-full h-48 object-cover">
-                  <div class="p-4">
-                      <h3 class="text-xl font-semibold mb-2">${pet.name}</h3>
-                      <p class="text-gray-600">${pet.description}</p>
-                      <button class="mt-4 bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-500">View Profile</button>
-                  </div>
-              </div>`;
-              petCardsContainer.insertAdjacentHTML('beforeend', card);
-          });
-      }
+    document.getElementById('toggleBtn').addEventListener('click', function () {
+        const navbar = document.querySelector('nav');
+        navbar.classList.toggle('bg-pink-100');
+        navbar.classList.toggle('bg-transparent');
+    });
+</script>
 
-      // Event listener for search button click
-      document.getElementById('searchBtn').addEventListener('click', function () {
-          searchPets();
-      });
-
-      // Toggling navbar for smaller screens
-      document.getElementById('toggleBtn').addEventListener('click', function () {
-          const navbar = document.querySelector('nav');
-          navbar.classList.toggle('bg-pink-100');
-          navbar.classList.toggle('bg-transparent');
-      });
-  </script>
 
 </body>
 
